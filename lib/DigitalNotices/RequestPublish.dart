@@ -1,0 +1,173 @@
+import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:usp_mobileapp/DigitalNotices/imagepicker.dart';
+import 'dart:convert';
+import 'package:usp_mobileapp/main.dart';
+import 'package:usp_mobileapp/DigitalNotices/imagepicker.dart';
+
+class RequestPublish extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.cyan[900],
+        centerTitle: true,
+        title: Text('Add Digital Notice'),
+      ),
+      body: const MyCustomForm(),
+    );
+  }
+}
+
+// Create a Form widget.
+class MyCustomForm extends StatefulWidget {
+  const MyCustomForm({Key? key}) : super(key: key);
+
+  @override
+  MyCustomFormState createState() {
+    return MyCustomFormState();
+  }
+}
+
+class MyCustomFormState extends State<MyCustomForm> {
+  // Create a global key that uniquely identifies the Form widget
+  // and allows validation of the form.
+  //
+  // Note: This is a GlobalKey<FormState>,
+  // not a GlobalKey<MyCustomFormState>.
+  final _formKey = GlobalKey<FormState>();
+  var name = TextEditingController();
+  var Description = TextEditingController();
+  var Image = TextEditingController();
+  var Category = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    // Build a Form widget using the _formKey created above.
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextFormField(
+            controller: name,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              icon: Icon(Icons.person),
+              hintText: 'What do people call you?',
+              labelText: 'Name *',
+            ),
+            // The validator receives the text that the user has entered.
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter some text';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: Description,
+            maxLines: 20,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              icon: Icon(Icons.pages_outlined),
+              labelText: ' Write A detailed Descritption of your Notice',
+            ),
+            // The validator receives the text that the user has entered.
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter some text';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: Category,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              icon: Icon(Icons.person_add_alt),
+              labelText: 'Student ID *',
+            ),
+            // The validator receives the text that the user has entered.
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter some text';
+              }
+              return null;
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: ElevatedButton(
+              onPressed: () async {
+                // Validate returns true if the form is valid, or false otherwise.
+                if (_formKey.currentState!.validate()) {
+                  // If the form is valid, display a snackbar. In the real world,
+                  // you'd often call a server or save the information in a database.
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Processing Data')),
+                  );
+
+                  senddata();
+                }
+              },
+              child: const Text('Send To Editor'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> senddata() async {
+    final String BaseURL = 'http://127.0.0.1:8000/api/expersioninterests/';
+    final Uri url = Uri.parse(BaseURL);
+    var response = await http.post(url,
+        body: ({
+          'stud_name': name.text,
+          'stud_id': Description.text,
+          'qualification': Image.text,
+          'experience': Category.text,
+        }));
+
+    print(response.statusCode);
+    if (response.statusCode == 201) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(' Data Sent')),
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => Home()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Processing Failed')),
+      );
+    }
+  }
+}
+
+// Future<String> senddata(name, qualification, work, id, gpa) async {
+//   String area = "Testing";
+//   final String BaseURL = 'http://127.0.0.1:8000/api/expersioninterests/';
+//   final Uri url = Uri.parse(BaseURL);
+//   try {
+//     final response = await http.post(url, body: {
+//       'stud_name': name,
+//       'stud_id': id,
+//       'qualification': qualification,
+//       'experience': work,
+//       'gpa': gpa,
+//       'area': area
+//     });
+//     if (response.statusCode == 201) {
+//       return "Msg Sent";
+//     } else {
+//       return "Msg Failed";
+//     }
+//   } catch (err) {
+//     print(err);
+//     return "Msg Failed";
+//   }
+// }
